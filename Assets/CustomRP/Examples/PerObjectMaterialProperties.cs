@@ -24,6 +24,7 @@ public class PerObjectMaterialProperties : MonoBehaviour
             propertyBlock = new MaterialPropertyBlock();
         }
 
+        // baseColor = new Color(Random.value, Random.value, Random.value);
         propertyBlock.SetColor(baseColorId, baseColor);
         GetComponent<Renderer>().SetPropertyBlock(propertyBlock);
     }

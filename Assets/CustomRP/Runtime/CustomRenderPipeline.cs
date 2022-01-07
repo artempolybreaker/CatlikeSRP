@@ -10,7 +10,7 @@ public class CustomRenderPipeline : RenderPipeline
 
     public CustomRenderPipeline()
     {
-        GraphicsSettings.useScriptableRenderPipelineBatching = true;
+        GraphicsSettings.useScriptableRenderPipelineBatching = false;
     }
 
     protected override void Render(ScriptableRenderContext context, Camera[] cameras)

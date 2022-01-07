@@ -49,13 +49,18 @@ namespace CustomRP.Runtime
 
         private void DrawVisibleGeometry()
         {
+            // opaque
             var sortingSettings = new SortingSettings(camera) { criteria = SortingCriteria.CommonOpaque };
-            var drawingSettings = new DrawingSettings(unlitShaderTagId, sortingSettings);
+            var drawingSettings = new DrawingSettings(unlitShaderTagId, sortingSettings)
+            {
+                enableInstancing = false, enableDynamicBatching = true
+            };
             var filteringSettings = new FilteringSettings(RenderQueueRange.opaque);
             context.DrawRenderers(cullingResults, ref drawingSettings, ref filteringSettings);
             
             context.DrawSkybox(camera);
             
+            // transparent
             sortingSettings.criteria = SortingCriteria.CommonTransparent;
             drawingSettings.sortingSettings = sortingSettings;
             filteringSettings.renderQueueRange = RenderQueueRange.transparent;
