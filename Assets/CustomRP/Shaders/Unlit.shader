@@ -4,11 +4,13 @@ Shader "Custom RP/Unlit" {
         _BaseColor("Color", Color) = (1.0, 1.0, 1.0, 1.0)
         [Enum(UnityEngine.Rendering.BlendMode)]_SrcBlend("Src blend", Float) = 1
         [Enum(UnityEngine.Rendering.BlendMode)]_DstBlend("Dst blend", Float) = 1
+        [Enum(Off, 0, On, 1)]_ZWrite("Z write", Float) = 1
     }
 
     SubShader {
         Pass {
             Blend [_SrcBlend] [_DstBlend]
+            ZWrite [_ZWrite]
             HLSLPROGRAM
             #pragma multi_compile_instancing
             #pragma vertex UnlitPassVertex
