@@ -8,6 +8,7 @@ namespace CustomRP.Runtime
         private const string BUFFER_NAME = "My Render Camera";
 
         private static ShaderTagId unlitShaderTagId = new ShaderTagId("SRPDefaultUnlit");
+        private static ShaderTagId litShaderTagId = new ShaderTagId("CustomLit");
 
         
         private CommandBuffer buffer = new CommandBuffer { name = BUFFER_NAME };
@@ -56,6 +57,8 @@ namespace CustomRP.Runtime
                 enableDynamicBatching = useDynamicBatching,
                 enableInstancing = useGPUInstancing,
             };
+            drawingSettings.SetShaderPassName(1, litShaderTagId);
+
             var filteringSettings = new FilteringSettings(RenderQueueRange.opaque);
             context.DrawRenderers(cullingResults, ref drawingSettings, ref filteringSettings);
             
