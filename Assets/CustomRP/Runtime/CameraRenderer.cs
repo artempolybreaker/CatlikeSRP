@@ -12,6 +12,7 @@ namespace CustomRP.Runtime
 
         
         private CommandBuffer buffer = new CommandBuffer { name = BUFFER_NAME };
+        private Lighting lighting = new Lighting();
 
         private CullingResults cullingResults;
         private ScriptableRenderContext context;
@@ -30,6 +31,7 @@ namespace CustomRP.Runtime
             }
             
             Setup();
+            lighting.Setup(context);
             DrawVisibleGeometry(useDynamicBatching, useGPUInstancing);
             DrawUnsupportedShaders();
             DrawGizmos();
