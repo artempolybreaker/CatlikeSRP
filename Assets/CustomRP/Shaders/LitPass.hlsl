@@ -3,6 +3,7 @@
 
 #include "../ShaderLibrary/Common.hlsl"
 #include "../ShaderLibrary/Surface.hlsl"
+#include "../ShaderLibrary/BRDF.hlsl"
 #include "../ShaderLibrary/Light.hlsl"
 #include "../ShaderLibrary/Lighting.hlsl"
 
@@ -61,7 +62,10 @@ float4 LitPassFragment(Varyings input) : SV_TARGET {
     surf.normal = normalize(input.normalWS);
     surf.metallic = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _Metallic);
     surf.smoothness = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _Smoothness);
-    float3 color = GetLighting(surf);
+
+    BRDF brdf = GetBRDF(surf);
+    
+    float3 color = GetLighting(surf, brdf);
     return float4(color, surf.alpha);
 }
 
