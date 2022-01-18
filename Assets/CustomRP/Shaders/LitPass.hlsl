@@ -65,7 +65,11 @@ float4 LitPassFragment(Varyings input) : SV_TARGET {
     surf.metallic = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _Metallic);
     surf.smoothness = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _Smoothness);
 
-    BRDF brdf = GetBRDF(surf);
+    #if defined (_PREMULTIPLY_ALPHA) 
+        BRDF brdf = GetBRDF(surf, true);
+    #else
+        BRDF brdf = GetBRDF(surf);
+    #endif
     
     float3 color = GetLighting(surf, brdf);
     return float4(color, surf.alpha);
