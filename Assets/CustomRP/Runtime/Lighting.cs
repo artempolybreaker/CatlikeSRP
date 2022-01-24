@@ -18,15 +18,14 @@ namespace CustomRP.Runtime
 
         private CullingResults cullingResults;
 
-        private CommandBuffer buffer = new CommandBuffer()
-        {
-            name = BUFFER_NAME
-        };
+        private CommandBuffer buffer = new CommandBuffer { name = BUFFER_NAME };
+        private Shadows shadows;
 
         public void Setup(ScriptableRenderContext context, CullingResults cullingResults, ShadowSettings shadowSettings)
         {
             this.cullingResults = cullingResults;
             buffer.BeginSample(BUFFER_NAME);
+            shadows.Setup(context, cullingResults, shadowSettings);
             SetupLights();
             buffer.EndSample(BUFFER_NAME);
             context.ExecuteCommandBuffer(buffer);
