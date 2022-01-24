@@ -18,20 +18,21 @@ namespace CustomRP.Runtime
         private ScriptableRenderContext context;
         private Camera camera;
 
-        public void Render(ScriptableRenderContext context, Camera camera, bool useDynamicBatching, bool useGPUInstancing)
+        public void Render(ScriptableRenderContext context, Camera camera, bool useDynamicBatching,
+            bool useGPUInstancing, ShadowSettings shadowSettings)
         {
             this.context = context;
             this.camera = camera;
             
             PrepareBuffer();
             PrepareForSceneWindow();
-            if (!Cull())
+            if (!Cull(shadowSettings.maxDistance))
             {
                 return;
             }
             
             Setup();
-            lighting.Setup(context, cullingResults);
+            lighting.Setup(context, cullingResults, shadowSettings);
             DrawVisibleGeometry(useDynamicBatching, useGPUInstancing);
             DrawUnsupportedShaders();
             DrawGizmos();
@@ -86,10 +87,11 @@ namespace CustomRP.Runtime
             buffer.Clear();
         }
 
-        private bool Cull()
+        private bool Cull(float shadowSettingsMaxDistance)
         {
             if (camera.TryGetCullingParameters(out ScriptableCullingParameters cullingParameters))
             {
+                cullingParameters.shadowDistance = Mathf.Min(shadowSettingsMaxDistance, camera.farClipPlane);
                 cullingResults = context.Cull(ref cullingParameters);
                 return true;
             }
