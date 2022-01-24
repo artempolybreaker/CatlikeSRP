@@ -36,6 +36,7 @@ namespace CustomRP.Runtime
             DrawVisibleGeometry(useDynamicBatching, useGPUInstancing);
             DrawUnsupportedShaders();
             DrawGizmos();
+            lighting.Cleanup();
             Submit();
         }
 
