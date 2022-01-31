@@ -11,9 +11,9 @@ namespace CustomRP.Runtime
         }
 
         private const string BUFFER_NAME = "Shadows";
-        private const uint MAX_SHADOWED_DIR_LIGHT_COUNT = 1;
+        private const uint MAX_SHADOWED_DIR_LIGHT_COUNT = 4;
 
-        private static int dirShadowAtlasId = Shader.PropertyToID("_DirShadowAtlas");
+        private static int dirShadowAtlasId = Shader.PropertyToID("_DirectionalShadowAtlas");
 
         private CommandBuffer buffer = new CommandBuffer { name = BUFFER_NAME };
         private ShadowedDirLight[] shadowedDirLights = new ShadowedDirLight[MAX_SHADOWED_DIR_LIGHT_COUNT];
@@ -39,16 +39,15 @@ namespace CustomRP.Runtime
 
         public void ReserveDirectionalShadows(Light light, int visibleLightIndex)
         {
-            if (shadowedDirLightCount >= MAX_SHADOWED_DIR_LIGHT_COUNT ||
-                light.shadows == LightShadows.None ||
-                Mathf.Approximately(light.shadowStrength, 0f) ||
-                !cullingResults.GetShadowCasterBounds(visibleLightIndex, out var shadowCasterBounds))
+            if (
+                shadowedDirLightCount < MAX_SHADOWED_DIR_LIGHT_COUNT &&
+                light.shadows != LightShadows.None && light.shadowStrength > 0f &&
+                cullingResults.GetShadowCasterBounds(visibleLightIndex, out Bounds b)
+            )
             {
-                return;
+                shadowedDirLights[shadowedDirLightCount++] =
+                    new ShadowedDirLight { visibleLightIndex = visibleLightIndex };
             }
-
-            shadowedDirLights[shadowedDirLightCount++] =
-                new ShadowedDirLight { visibleLightIndex = visibleLightIndex };
         }
 
         public void Render()

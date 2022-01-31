@@ -15,9 +15,7 @@ Shader "Custom RP/Lit" {
 
     SubShader {
         Pass {
-            Tags {
-                "LightMode" = "CustomLit"
-            }
+            Tags {"LightMode" = "CustomLit"}
 
             Blend [_SrcBlend] [_DstBlend]
             ZWrite [_ZWrite]
@@ -31,6 +29,21 @@ Shader "Custom RP/Lit" {
             #pragma fragment LitPassFragment
             #include "LitPass.hlsl"
             ENDHLSL
+        }
+        
+        Pass {
+            Tags {"LightMode" = "ShadowCaster"}
+            
+            ColorMask 0 // -> because we only need to write depth disable writing color data
+            
+			HLSLPROGRAM
+			#pragma target 3.5
+			#pragma shader_feature _CLIPPING
+			#pragma multi_compile_instancing
+			#pragma vertex ShadowCasterPassVertex
+			#pragma fragment ShadowCasterPassFragment
+			#include "ShadowCasterPass.hlsl"
+			ENDHLSL
         }
     }
     
