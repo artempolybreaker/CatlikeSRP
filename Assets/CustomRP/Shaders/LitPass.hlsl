@@ -59,6 +59,7 @@ float4 LitPassFragment(Varyings input) : SV_TARGET {
     #endif
 
     Surface surf;
+    surf.position = input.positionWS;
     surf.color = base.rgb;
     surf.alpha = base.a;
     surf.normal = normalize(input.normalWS);
