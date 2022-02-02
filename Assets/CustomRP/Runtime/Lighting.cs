@@ -12,9 +12,11 @@ namespace CustomRP.Runtime
         private static int dirLightCountId = Shader.PropertyToID("_DirectionalLightCount");
         private static int dirLightColorsId = Shader.PropertyToID("_DirectionalLightColors");
         private static int dirLightDirectionsId = Shader.PropertyToID("_DirectionalLightDirections");
+        private static int dirLightShadowDataId = Shader.PropertyToID("_DirectionalLightShadowData");
 
         private Vector4[] dirLightColors = new Vector4[MAX_DIR_LIGHT_COUNT];
         private Vector4[] dirLightDirections = new Vector4[MAX_DIR_LIGHT_COUNT];
+        private Vector4[] dirLightShadowData = new Vector4[MAX_DIR_LIGHT_COUNT];
 
         private CullingResults cullingResults;
 
@@ -53,13 +55,14 @@ namespace CustomRP.Runtime
             buffer.SetGlobalInt(dirLightCountId, visibleLights.Length);
             buffer.SetGlobalVectorArray(dirLightColorsId, dirLightColors);
             buffer.SetGlobalVectorArray(dirLightDirectionsId, dirLightDirections);
+            buffer.SetGlobalVectorArray(dirLightShadowDataId, dirLightShadowData);
         }
 
         private void SetupDirectionalLight(int index, ref VisibleLight visibleLight)
         {
             dirLightColors[index] = visibleLight.finalColor;
             dirLightDirections[index] = -visibleLight.localToWorldMatrix.GetColumn(2);
-            shadows.ReserveDirectionalShadows(visibleLight.light, index);
+            dirLightShadowData[index] = shadows.ReserveDirectionalShadows(visibleLight.light, index);
         }
 
         public void Cleanup()

@@ -40,17 +40,19 @@ namespace CustomRP.Runtime
             buffer.Clear();
         }
 
-        public void ReserveDirectionalShadows(Light light, int visibleLightIndex)
+        public Vector2 ReserveDirectionalShadows(Light light, int visibleLightIndex)
         {
-            if (
-                shadowedDirLightCount < MAX_SHADOWED_DIR_LIGHT_COUNT &&
+            if (shadowedDirLightCount < MAX_SHADOWED_DIR_LIGHT_COUNT &&
                 light.shadows != LightShadows.None && light.shadowStrength > 0f &&
                 cullingResults.GetShadowCasterBounds(visibleLightIndex, out Bounds b)
             )
             {
-                shadowedDirLights[shadowedDirLightCount++] =
+                shadowedDirLights[shadowedDirLightCount] =
                     new ShadowedDirLight { visibleLightIndex = visibleLightIndex };
+                return new Vector2(light.shadowStrength, shadowedDirLightCount++);
             }
+            
+            return Vector2.zero;
         }
 
         public void Render()
