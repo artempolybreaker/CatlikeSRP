@@ -16,11 +16,11 @@ struct Light
     float attenuation;
 };
 
-DirectionalShadowData GetDirectionalShadowData(int lightIndex)
+DirectionalShadowData GetDirectionalShadowData(int lightIndex, ShadowData shadowData)
 {
     DirectionalShadowData data;
     data.strength = _DirectionalLightShadowData[lightIndex].x;
-    data.tileIndex = _DirectionalLightShadowData[lightIndex].y;
+    data.tileIndex = _DirectionalLightShadowData[lightIndex].y + shadowData.cascadeIndex;
     return data;
 }
 
@@ -29,12 +29,13 @@ int GetDirectionalLightCount()
     return _DirectionalLightCount;
 }
 
-Light GetDirectionalLight(int index, Surface surfaceWS) {
+Light GetDirectionalLight(int index, Surface surfaceWS, ShadowData shadowData) {
     Light light;
     light.color = _DirectionalLightColors[index].rgb;
     light.direction = _DirectionalLightDirections[index].xyz;
-    DirectionalShadowData shadowData = GetDirectionalShadowData(index);
-    light.attenuation = GetDirectionalShadowAttenuation(shadowData, surfaceWS);
+    DirectionalShadowData dirShadowData = GetDirectionalShadowData(index, shadowData);
+    light.attenuation = GetDirectionalShadowAttenuation(dirShadowData, surfaceWS);
+    // light.attenuation = shadowData.cascadeIndex * 0.25; --> to view the culling spheres 
     return light;
 }
 
