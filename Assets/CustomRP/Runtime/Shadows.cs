@@ -16,8 +16,11 @@ namespace CustomRP.Runtime
 
         private static int dirShadowAtlasId = Shader.PropertyToID("_DirectionalShadowAtlas");
         private static int dirShadowMatricesId = Shader.PropertyToID("_DirectionalShadowMatrices");
+        private static int cascadeCountId = Shader.PropertyToID("_CascadeCount");
+        private static int cascadeCullingSpheresId = Shader.PropertyToID("_CascadeCullingSpheres");
 
         private static Matrix4x4[] dirShadowMatrices = new Matrix4x4[MAX_SHADOWED_DIR_LIGHT_COUNT * MAX_CASCADES];
+        private static Vector4[] cascadeCullingSpheres = new Vector4[MAX_CASCADES];
 
         private CommandBuffer buffer = new CommandBuffer { name = BUFFER_NAME };
         private ShadowedDirLight[] shadowedDirLights = new ShadowedDirLight[MAX_SHADOWED_DIR_LIGHT_COUNT];
@@ -89,6 +92,8 @@ namespace CustomRP.Runtime
                 RenderDirectionalShadows(i, split, tileSize);
             }
 
+            buffer.SetGlobalInt(cascadeCountId, shadowSettings.directional.cascadeCount);
+            buffer.SetGlobalVectorArray(cascadeCullingSpheresId, cascadeCullingSpheres);
             buffer.SetGlobalMatrixArray(dirShadowMatricesId, dirShadowMatrices);
             buffer.EndSample(BUFFER_NAME);
             ExecuteBuffer();
@@ -116,8 +121,15 @@ namespace CustomRP.Runtime
                     out var splitData);
 
                 shadowDrawingSettings.splitData = splitData;
-                int tileIndex = tileOffset + i;
+                // we only need to do this for the first light, as the cascades of all lights are equivalent.
+                if (index == 0)
+                {
+                    Vector4 cullingSphere = splitData.cullingSphere;
+                    cullingSphere.w *= cullingSphere.w;
+                    cascadeCullingSpheres[i] = cullingSphere;
+                }
 
+                int tileIndex = tileOffset + i;
                 // dirShadowMatrices[tileIndex] = projMatrix * viewMatrix; // -> conversion matrix from world space to light space
                 dirShadowMatrices[tileIndex] = ConvertToAtlasMatrix(
                     projMatrix * viewMatrix, SetTileViewport(tileIndex, split, tileSize), split
