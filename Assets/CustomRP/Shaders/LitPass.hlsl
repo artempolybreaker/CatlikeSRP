@@ -64,6 +64,7 @@ float4 LitPassFragment(Varyings input) : SV_TARGET {
     surf.alpha = base.a;
     surf.normal = normalize(input.normalWS);
     surf.viewDirection = normalize(_WorldSpaceCameraPos - input.positionWS);
+    surf.depth = -TransformWorldToView(input.positionWS).z;
     surf.metallic = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _Metallic);
     surf.smoothness = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _Smoothness);
 
