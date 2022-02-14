@@ -18,7 +18,7 @@ namespace CustomRP.Runtime
         private static int dirShadowMatricesId = Shader.PropertyToID("_DirectionalShadowMatrices");
         private static int cascadeCountId = Shader.PropertyToID("_CascadeCount");
         private static int cascadeCullingSpheresId = Shader.PropertyToID("_CascadeCullingSpheres");
-        private static int shadowDistanceId = Shader.PropertyToID("_ShadowDistance");
+        private static int shadowDistanceFadeId = Shader.PropertyToID("_ShadowDistanceFade");
 
         private static Matrix4x4[] dirShadowMatrices = new Matrix4x4[MAX_SHADOWED_DIR_LIGHT_COUNT * MAX_CASCADES];
         private static Vector4[] cascadeCullingSpheres = new Vector4[MAX_CASCADES];
@@ -96,7 +96,7 @@ namespace CustomRP.Runtime
             buffer.SetGlobalInt(cascadeCountId, shadowSettings.directional.cascadeCount);
             buffer.SetGlobalVectorArray(cascadeCullingSpheresId, cascadeCullingSpheres);
             buffer.SetGlobalMatrixArray(dirShadowMatricesId, dirShadowMatrices);
-            buffer.SetGlobalFloat(shadowDistanceId, shadowSettings.maxDistance);
+            buffer.SetGlobalVector(shadowDistanceFadeId, new Vector4(1f/shadowSettings.maxDistance, 1f/shadowSettings.distanceFade));
             buffer.EndSample(BUFFER_NAME);
             ExecuteBuffer();
         }
