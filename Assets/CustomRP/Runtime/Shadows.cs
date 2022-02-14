@@ -144,8 +144,11 @@ namespace CustomRP.Runtime
                 );
 
                 buffer.SetViewProjectionMatrices(viewMatrix, projMatrix);
+                
+                buffer.SetGlobalDepthBias(0, 3f);
                 ExecuteBuffer();
                 context.DrawShadows(ref shadowDrawingSettings);
+                buffer.SetGlobalDepthBias(0f, 0f);
             }
         }
 
