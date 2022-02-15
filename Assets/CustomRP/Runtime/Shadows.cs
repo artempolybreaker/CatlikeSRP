@@ -192,9 +192,12 @@ namespace CustomRP.Runtime
 
         private void SetCascadeData(int index, Vector4 cullingSphere, float tileSize)
         {
-            cascadeData[index].x = 1f / cullingSphere.w;
+            float texelSize = (2f * cullingSphere.w) / tileSize;
             cullingSphere.w *= cullingSphere.w;
             cascadeCullingSpheres[index] = cullingSphere;
+            cascadeData[index] = new Vector4(
+                1f / cullingSphere.w,
+                texelSize * 1.4142136f); // -> In the worst case we end up having to offset along the square's diagonal, so let's scale it by √2. 
         }
         
         public void Cleanup()
