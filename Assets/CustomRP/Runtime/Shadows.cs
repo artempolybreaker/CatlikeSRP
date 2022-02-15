@@ -8,6 +8,7 @@ namespace CustomRP.Runtime
         private struct ShadowedDirLight
         {
             public int visibleLightIndex;
+            public float slopeScaleBias;
         }
 
         private const string BUFFER_NAME = "Shadows";
@@ -47,7 +48,7 @@ namespace CustomRP.Runtime
             buffer.Clear();
         }
 
-        public Vector2 ReserveDirectionalShadows(Light light, int visibleLightIndex)
+        public Vector3 ReserveDirectionalShadows(Light light, int visibleLightIndex)
         {
             if (shadowedDirLightCount < MAX_SHADOWED_DIR_LIGHT_COUNT &&
                 light.shadows != LightShadows.None && light.shadowStrength > 0f &&
@@ -55,11 +56,11 @@ namespace CustomRP.Runtime
             )
             {
                 shadowedDirLights[shadowedDirLightCount] =
-                    new ShadowedDirLight { visibleLightIndex = visibleLightIndex };
-                return new Vector2(light.shadowStrength, shadowSettings.directional.cascadeCount * shadowedDirLightCount++);
+                    new ShadowedDirLight { visibleLightIndex = visibleLightIndex, slopeScaleBias = light.shadowBias };
+                return new Vector3(light.shadowStrength, shadowSettings.directional.cascadeCount * shadowedDirLightCount++, light.shadowNormalBias);
             }
             
-            return Vector2.zero;
+            return Vector3.zero;
         }
 
         public void Render()
@@ -146,10 +147,10 @@ namespace CustomRP.Runtime
 
                 buffer.SetViewProjectionMatrices(viewMatrix, projMatrix);
                 
-                // buffer.SetGlobalDepthBias(0, 3f); -> fixes shadows acne
+                buffer.SetGlobalDepthBias(0, light.slopeScaleBias);
                 ExecuteBuffer();
                 context.DrawShadows(ref shadowDrawingSettings);
-                // buffer.SetGlobalDepthBias(0f, 0f);
+                buffer.SetGlobalDepthBias(0f, 0f);
             }
         }
 
