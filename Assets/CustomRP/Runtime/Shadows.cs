@@ -9,6 +9,7 @@ namespace CustomRP.Runtime
         {
             public int visibleLightIndex;
             public float slopeScaleBias;
+            public float nearPlaneOffset;
         }
 
         private const string BUFFER_NAME = "Shadows";
@@ -56,8 +57,14 @@ namespace CustomRP.Runtime
             )
             {
                 shadowedDirLights[shadowedDirLightCount] =
-                    new ShadowedDirLight { visibleLightIndex = visibleLightIndex, slopeScaleBias = light.shadowBias };
-                return new Vector3(light.shadowStrength, shadowSettings.directional.cascadeCount * shadowedDirLightCount++, light.shadowNormalBias);
+                    new ShadowedDirLight
+                    {
+                        visibleLightIndex = visibleLightIndex,
+                        slopeScaleBias = light.shadowBias,
+                        nearPlaneOffset = light.shadowNearPlane
+                    };
+                return new Vector3(light.shadowStrength,
+                    shadowSettings.directional.cascadeCount * shadowedDirLightCount++, light.shadowNormalBias);
             }
             
             return Vector3.zero;
@@ -127,7 +134,7 @@ namespace CustomRP.Runtime
                     cascadeCount,
                     ratios,
                     tileSize,
-                    0f,
+                    light.nearPlaneOffset,
                     out var viewMatrix,
                     out var projMatrix,
                     out var splitData);
