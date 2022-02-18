@@ -227,11 +227,13 @@ namespace CustomRP.Runtime
         private void SetCascadeData(int index, Vector4 cullingSphere, float tileSize)
         {
             float texelSize = (2f * cullingSphere.w) / tileSize;
+            float filterSize = texelSize * ((float)shadowSettings.directional.filter + 1f);
+            cullingSphere.w -= filterSize; // -> for filtering - increasing the sample region also means that we can end up sampling outside of the cascade's culling sphere. We can avoid that by reducing the sphere's radius by the filter size before squaring it.
             cullingSphere.w *= cullingSphere.w;
             cascadeCullingSpheres[index] = cullingSphere;
             cascadeData[index] = new Vector4(
                 1f / cullingSphere.w,
-                texelSize * 1.4142136f); // -> In the worst case we end up having to offset along the square's diagonal, so let's scale it by √2. 
+                filterSize * 1.4142136f); // -> In the worst case we end up having to offset along the square's diagonal, so let's scale it by √2. 
         }
         
         public void Cleanup()
