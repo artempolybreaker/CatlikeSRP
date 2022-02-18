@@ -1,6 +1,22 @@
 ﻿#ifndef CUSTOM_SHADOWS_INCLUDED
 #define CUSTOM_SHADOWS_INCLUDED
 
+#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Shadow/ShadowSamplingTent.hlsl"
+
+#if defined (_DIRECTIONAL_PCF3)
+    // We only need to take four samples because each one uses the bilinear 2×2 filter.
+    // A square of those offset by half a texel in all directions covers 3×3 texels with a tent filter,
+    // with the center having a stronger weight than the edges.
+    #define DIRECTIONAL_FILTER_SAMPLES 4
+    #define DIRECTIONAL_FILTER_SETUP SampleShadow_ComputeSamples_Tent_3x3
+#elif defined(_DIRECTIONAL_PCF5)
+    #define DIRECTIONAL_FILTER_SAMPLES 9
+    #define DIRECTIONAL_FILTER_SETUP SampleShadow_ComputeSamples_Tent_5x5
+#elif defined(_DIRECTIONAL_PCF7)
+    #define DIRECTIONAL_FILTER_SAMPLES 16
+    #define DIRECTIONAL_FILTER_SETUP SampleShadow_ComputeSamples_Tent_7x7
+#endif
+
 #define MAX_SHADOWED_DIRECTIONAL_LIGHT_COUNT 4
 #define MAX_CASCADE_COUNT 4
 
@@ -20,6 +36,7 @@ CBUFFER_START(_CustomShadows)
     float4 _CascadeCullingSpheres[MAX_CASCADE_COUNT];
     float4 _CascadeData[MAX_CASCADE_COUNT];
     float4x4 _DirectionalShadowMatrices[MAX_SHADOWED_DIRECTIONAL_LIGHT_COUNT * MAX_CASCADE_COUNT];
+    float4 _ShadowAtlasSize;
     float4 _ShadowDistanceFade;
 CBUFFER_END
 
@@ -41,7 +58,7 @@ float FadedShadowStrength(float distance, float scale, float fade)
     return saturate((1.0 - distance * scale) * fade);
 }
 
-ShadowData GetShadowData (Surface surfaceWS)
+ShadowData GetShadowData(Surface surfaceWS)
 {
     ShadowData data;
     data.strength = FadedShadowStrength(surfaceWS.depth, _ShadowDistanceFade.x, _ShadowDistanceFade.y);
@@ -73,6 +90,24 @@ float SampleDirectionalShadowAtlas(float3 positionSTS) // -> STS = ShadowTexture
     return SAMPLE_TEXTURE2D_SHADOW(_DirectionalShadowAtlas, SHADOW_SAMPLER, positionSTS);
 }
 
+float FilterDirectionalShadow(float3 positionSTS)
+{
+    #if defined(DIRECTIONAL_FILTER_SETUP)
+        float weights[DIRECTIONAL_FILTER_SAMPLES];
+        float2 positions[DIRECTIONAL_FILTER_SAMPLES];
+        float4 size = _ShadowAtlasSize.yyxx;
+		DIRECTIONAL_FILTER_SETUP(size, positionSTS.xy, weights, positions);
+        float shadow = 0;
+        for (int i = 0; i < DIRECTIONAL_FILTER_SAMPLES; i++)
+        {
+            shadow += weights[i] * SampleDirectionalShadowAtlas(float3(positions[i].xy, positionSTS.z));
+        }
+        return shadow;
+    #else
+        return SampleDirectionalShadowAtlas(positionSTS);
+    #endif
+}
+
 float GetDirectionalShadowAttenuation(DirectionalShadowData directionalData, ShadowData shadowData, Surface surfaceWS)
 {
     if (directionalData.strength <= 0.0)
@@ -83,7 +118,7 @@ float GetDirectionalShadowAttenuation(DirectionalShadowData directionalData, Sha
     float3 normalBias = surfaceWS.normal * (directionalData.normalBias * _CascadeData[shadowData.cascadeIndex].y);
     
     float3 positionSTS = mul(_DirectionalShadowMatrices[directionalData.tileIndex], float4(surfaceWS.position + normalBias, 1.0)).xyz;
-    float shadow = SampleDirectionalShadowAtlas(positionSTS);
+    float shadow = FilterDirectionalShadow(positionSTS);
 
     return lerp(1.0, shadow, directionalData.strength);
 }

@@ -42,6 +42,7 @@ Varyings ShadowCasterPassVertex (Attributes input) {
     return output;
 }
 
+// The only thing the fragment here does is potentially clip fragments.
 void ShadowCasterPassFragment (Varyings input) {
     UNITY_SETUP_INSTANCE_ID(input);
     float4 baseMap = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, input.baseUV);

@@ -16,11 +16,19 @@ namespace CustomRP.Runtime
         private const uint MAX_SHADOWED_DIR_LIGHT_COUNT = 4;
         private const uint MAX_CASCADES = 4;
 
+        private static string[] directionalFilterKeywoards =
+        {
+            "_DIRECTIONAL_PCF3",
+            "_DIRECTIONAL_PCF5",
+            "_DIRECTIONAL_PCF7"
+        };
+
         private static int dirShadowAtlasId = Shader.PropertyToID("_DirectionalShadowAtlas");
         private static int dirShadowMatricesId = Shader.PropertyToID("_DirectionalShadowMatrices");
         private static int cascadeCountId = Shader.PropertyToID("_CascadeCount");
         private static int cascadeCullingSpheresId = Shader.PropertyToID("_CascadeCullingSpheres");
         private static int cascadeDataId = Shader.PropertyToID("_CascadeData");
+        private static int shadowAtlasSizeId = Shader.PropertyToID("_ShadowAtlasSize");
         private static int shadowDistanceFadeId = Shader.PropertyToID("_ShadowDistanceFade");
 
         private static Matrix4x4[] dirShadowMatrices = new Matrix4x4[MAX_SHADOWED_DIR_LIGHT_COUNT * MAX_CASCADES];
@@ -114,8 +122,26 @@ namespace CustomRP.Runtime
                     1f / shadowSettings.maxDistance,
                     1f / shadowSettings.distanceFade,
                     1 / (1f - f * f)));
+            SetKeywords();
+            buffer.SetGlobalVector(shadowAtlasSizeId, new Vector4(atlasSize, 1f / atlasSize));
             buffer.EndSample(BUFFER_NAME);
             ExecuteBuffer();
+        }
+
+        private void SetKeywords()
+        {
+            int enabledIndex = (int)shadowSettings.directional.filter - 1;
+            for (int i = 0; i < directionalFilterKeywoards.Length; i++)
+            {
+                if (i == enabledIndex)
+                {
+                    buffer.EnableShaderKeyword(directionalFilterKeywoards[i]);
+                }
+                else
+                {
+                    buffer.DisableShaderKeyword(directionalFilterKeywoards[i]);
+                }
+            }
         }
 
         private void RenderDirectionalShadows(int index, int split, int tileSize)
