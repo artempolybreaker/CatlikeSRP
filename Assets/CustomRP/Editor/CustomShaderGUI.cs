@@ -29,6 +29,8 @@ public class CustomShaderGUI : ShaderGUI
     
     public override void OnGUI(MaterialEditor materialEditor, MaterialProperty[] properties)
     {
+        EditorGUI.BeginChangeCheck();
+        
         base.OnGUI(materialEditor, properties);
 
         this.editor = materialEditor;
@@ -43,6 +45,11 @@ public class CustomShaderGUI : ShaderGUI
             ClipPreset();
             FadePreset();
             TransparentPreset();
+        }
+
+        if (EditorGUI.EndChangeCheck())
+        {
+            SetShadowCasterPass();
         }
     }
 
@@ -125,6 +132,22 @@ public class CustomShaderGUI : ShaderGUI
         }
     }
 
+    void SetShadowCasterPass()
+    {
+        MaterialProperty shadows = FindProperty("_Shadows", properties, false);
+        if (shadows == null || shadows.hasMixedValue)
+        {
+            return;
+        }
+        
+        bool enabled = shadows.floatValue < (float)ShadowMode.Off;
+        foreach (var m in materials)
+        {
+            var mat = (Material)m;
+            mat.SetShaderPassEnabled("ShadowCaster", enabled);
+        }
+    }
+    
     bool PresetButton(string name)
     {
         if (GUILayout.Button(name))
@@ -178,8 +201,6 @@ public class CustomShaderGUI : ShaderGUI
         }
     }
     
-    private bool HasPremultiplyAlpha => HasProperty("_PremulAlpha");
-
     void TransparentPreset()
     {
         if (HasPremultiplyAlpha && PresetButton("Transparent"))
@@ -193,4 +214,6 @@ public class CustomShaderGUI : ShaderGUI
             Shadows = ShadowMode.Dither;
         }
     }
+    
+    private bool HasPremultiplyAlpha => HasProperty("_PremulAlpha");
 }
