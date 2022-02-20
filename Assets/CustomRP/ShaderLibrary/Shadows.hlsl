@@ -89,6 +89,7 @@ ShadowData GetShadowData(Surface surfaceWS)
     }
 
     #if defined(_CASCADE_BLEND_DITHER)
+        // if we're not in the last cascade, jump to the next cascade if the blend value is less than the dither value.
         else if (data.cascadeBlend < surfaceWS.dither)
         {
             i += 1;

@@ -158,6 +158,8 @@ namespace CustomRP.Runtime
             int tileOffset = index * cascadeCount;
             Vector3 ratios = shadowSettings.directional.CascadeRatios;
 
+            float cullingFactor = Mathf.Max(0f, 0.8f - shadowSettings.directional.cascadeFade);
+            
             for (int i = 0; i < cascadeCount; i++)
             {
                 cullingResults.ComputeDirectionalShadowMatricesAndCullingPrimitives(
@@ -171,6 +173,7 @@ namespace CustomRP.Runtime
                     out var projMatrix,
                     out var splitData);
 
+                splitData.shadowCascadeBlendCullingFactor = cullingFactor;
                 shadowDrawingSettings.splitData = splitData;
                 // we only need to do this for the first light, as the cascades of all lights are equivalent.
                 if (index == 0)
