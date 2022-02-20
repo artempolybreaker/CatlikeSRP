@@ -67,6 +67,7 @@ float4 LitPassFragment(Varyings input) : SV_TARGET {
     surf.depth = -TransformWorldToView(input.positionWS).z;
     surf.metallic = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _Metallic);
     surf.smoothness = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _Smoothness);
+    surf.dither = InterleavedGradientNoise(input.positionCS.xy, 0);
 
     #if defined (_PREMULTIPLY_ALPHA) 
         BRDF brdf = GetBRDF(surf, true);

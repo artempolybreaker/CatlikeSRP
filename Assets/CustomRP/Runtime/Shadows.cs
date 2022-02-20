@@ -23,6 +23,12 @@ namespace CustomRP.Runtime
             "_DIRECTIONAL_PCF7"
         };
 
+        private static string[] cascadeBlendKeywords =
+        {
+            "_CASCADE_BLEND_SOFT",
+            "_CASCADE_BLEND_DITHER"
+        };
+
         private static int dirShadowAtlasId = Shader.PropertyToID("_DirectionalShadowAtlas");
         private static int dirShadowMatricesId = Shader.PropertyToID("_DirectionalShadowMatrices");
         private static int cascadeCountId = Shader.PropertyToID("_CascadeCount");
@@ -122,24 +128,24 @@ namespace CustomRP.Runtime
                     1f / shadowSettings.maxDistance,
                     1f / shadowSettings.distanceFade,
                     1 / (1f - f * f)));
-            SetKeywords();
+            SetKeywords(directionalFilterKeywoards, (int)shadowSettings.directional.filter - 1);
+            SetKeywords(cascadeBlendKeywords, (int)shadowSettings.directional.cascadeBlend - 1);
             buffer.SetGlobalVector(shadowAtlasSizeId, new Vector4(atlasSize, 1f / atlasSize));
             buffer.EndSample(BUFFER_NAME);
             ExecuteBuffer();
         }
 
-        private void SetKeywords()
+        private void SetKeywords(string[] keywords, int enabledIndex)
         {
-            int enabledIndex = (int)shadowSettings.directional.filter - 1;
-            for (int i = 0; i < directionalFilterKeywoards.Length; i++)
+            for (int i = 0; i < keywords.Length; i++)
             {
                 if (i == enabledIndex)
                 {
-                    buffer.EnableShaderKeyword(directionalFilterKeywoards[i]);
+                    buffer.EnableShaderKeyword(keywords[i]);
                 }
                 else
                 {
-                    buffer.DisableShaderKeyword(directionalFilterKeywoards[i]);
+                    buffer.DisableShaderKeyword(keywords[i]);
                 }
             }
         }

@@ -36,6 +36,13 @@ public class ShadowSettings
         [Range(0.001f, 1f)] public float cascadeFade;
 
         public Vector3 CascadeRatios => new Vector3 { x = cascadeRatio1, y = cascadeRatio2, z = cascadeRatio3 };
+        
+        public enum CascadeBlendMode
+        {
+            Hard, Soft, Dither
+        }
+
+        public CascadeBlendMode cascadeBlend;
     }
 
     [Min(0f)] public float maxDistance = 100f;
@@ -48,6 +55,8 @@ public class ShadowSettings
         cascadeCount = 4,
         cascadeRatio1 = 0.1f,
         cascadeRatio2 = 0.25f,
-        cascadeRatio3 = 0.5f
+        cascadeRatio3 = 0.5f,
+        cascadeFade = 0.1f,
+        cascadeBlend = Directional.CascadeBlendMode.Hard
     };
 }
