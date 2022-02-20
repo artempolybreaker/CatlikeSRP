@@ -50,6 +50,7 @@ struct DirectionalShadowData
 struct ShadowData
 {
     int cascadeIndex;
+    float cascadeBlend;
     float strength;
 };
 
@@ -61,6 +62,7 @@ float FadedShadowStrength(float distance, float scale, float fade)
 ShadowData GetShadowData(Surface surfaceWS)
 {
     ShadowData data;
+    data.cascadeBlend = 1.0;
     data.strength = FadedShadowStrength(surfaceWS.depth, _ShadowDistanceFade.x, _ShadowDistanceFade.y);
     int i;
     for (i = 0; i < _CascadeCount; i++)
@@ -69,9 +71,13 @@ ShadowData GetShadowData(Surface surfaceWS)
         float distSq = DistanceSquared(surfaceWS.position, sphere.xyz);
         if (distSq < sphere.w)
         {
+            float fade = FadedShadowStrength(distSq, _CascadeData[i].x, _ShadowDistanceFade.z);
             if (i == _CascadeCount - 1)
             {
-                data.strength *= FadedShadowStrength(distSq, _CascadeData[i].x, _ShadowDistanceFade.z);
+                data.strength *= fade;
+            } else
+            {
+                data.cascadeBlend = fade;
             }
             break;
         }
@@ -119,6 +125,13 @@ float GetDirectionalShadowAttenuation(DirectionalShadowData directionalData, Sha
     
     float3 positionSTS = mul(_DirectionalShadowMatrices[directionalData.tileIndex], float4(surfaceWS.position + normalBias, 1.0)).xyz;
     float shadow = FilterDirectionalShadow(positionSTS);
+
+    if (shadowData.cascadeBlend < 1.0)
+    {
+        normalBias = surfaceWS.normal * (directionalData.normalBias * _CascadeData[shadowData.cascadeIndex + 1].y);
+        positionSTS = mul(_DirectionalShadowMatrices[directionalData.tileIndex + 1], float4(surfaceWS.position + normalBias, 1.0)).xyz;
+        shadow = lerp(FilterDirectionalShadow(positionSTS), shadow, shadowData.cascadeBlend);
+    }
 
     return lerp(1.0, shadow, directionalData.strength);
 }
